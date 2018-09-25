@@ -36,6 +36,7 @@
 #include "camera.h"
 #include "camera_common.h"
 #include "xclk.h"
+#include "twi.h"
 #if CONFIG_OV2640_SUPPORT
 #include "ov2640.h"
 #endif
@@ -142,6 +143,11 @@ esp_err_t camera_probe(const camera_config_t* config, camera_model_t* out_camera
     delay(10);
     gpio_set_level(config->pin_reset, 1);
     delay(10);
+
+    /*after reseting the sensor,the reg (0xff) must be programmed 0x01*/
+    uint8_t buf[] = {0xff, 0x01};
+    twi_writeTo(0x30, buf, 2, true);
+    delay(100);
 
     ESP_LOGD(TAG, "Searching for camera address");
     /* Probe the sensor */
